@@ -6,7 +6,7 @@ export default function CamerasPage() {
   const [cameras, setCameras] = useState<CameraType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [newCamera, setNewCamera] = useState({ name: "", rtsp_url: "", location: "" });
+  const [newCamera, setNewCamera] = useState({ name: "", stream_url: "", location: "" });
   const [adding, setAdding] = useState(false);
   useEffect(() => {
     loadCameras();
@@ -22,11 +22,11 @@ export default function CamerasPage() {
     }
   }
   async function handleAdd() {
-    if (!newCamera.name || !newCamera.rtsp_url) return;
+    if (!newCamera.name || !newCamera.stream_url) return;
     setAdding(true);
     try {
       await api.addCamera(newCamera);
-      setNewCamera({ name: "", rtsp_url: "", location: "" });
+      setNewCamera({ name: "", stream_url: "", location: "" });
       setShowAdd(false);
       await loadCameras();
     } catch (err) {
@@ -84,8 +84,8 @@ export default function CamerasPage() {
               <label className="block text-sm text-gray-400 mb-1.5">RTSP URL</label>
               <input
                 type="text"
-                value={newCamera.rtsp_url}
-                onChange={(e) => setNewCamera({ ...newCamera, rtsp_url: e.target.value })}
+                value={newCamera.stream_url}
+                onChange={(e) => setNewCamera({ ...newCamera, stream_url: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition text-white"
                 placeholder="rtsp://192.168.1.100:554/stream1"
               />
@@ -104,7 +104,7 @@ export default function CamerasPage() {
           <div className="flex gap-3">
             <button
               onClick={handleAdd}
-              disabled={adding || !newCamera.name || !newCamera.rtsp_url}
+              disabled={adding || !newCamera.name || !newCamera.stream_url}
               className="px-5 py-2.5 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 rounded-lg text-sm font-medium transition"
             >
               {adding ? "Adding..." : "Add Camera"}
@@ -170,7 +170,7 @@ export default function CamerasPage() {
                 {cam.location && (
                   <p className="text-xs text-gray-500 mb-2">{cam.location}</p>
                 )}
-                <p className="text-xs text-gray-600 font-mono truncate mb-3">{cam.rtsp_url}</p>
+                <p className="text-xs text-gray-600 font-mono truncate mb-3">{cam.stream_url}</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleDelete(cam.id)}

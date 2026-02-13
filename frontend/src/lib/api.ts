@@ -11,7 +11,7 @@ const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/ws";
 export interface Camera {
   id: number;
   name: string;
-  rtsp_url: string;
+  stream_url: string;
   status: "active" | "inactive" | "error";
   location?: string;
   created_at?: string;
@@ -98,7 +98,7 @@ class FireSightAPI {
     return this.request<Camera>("/cameras/" + id);
   }
 
-  async addCamera(data: { name: string; rtsp_url: string; location?: string }): Promise<Camera> {
+  async addCamera(data: { name: string; stream_url: string; location?: string }): Promise<Camera> {
     return this.request<Camera>("/cameras", {
       method: "POST",
       body: JSON.stringify(data),

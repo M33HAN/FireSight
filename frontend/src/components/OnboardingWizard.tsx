@@ -19,7 +19,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   const [step, setStep] = useState(0);
   const [cameraData, setCameraData] = useState({
     name: "",
-    rtsp_url: "",
+    stream_url: "",
     location: "",
   });
   const [confidenceThreshold, setConfidenceThreshold] = useState(0.5);
@@ -33,7 +33,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   const isLastStep = step === STEPS.length - 1;
 
   async function handleNext() {
-    if (step === 1 && cameraData.name && cameraData.rtsp_url) {
+    if (step === 1 && cameraData.name && cameraData.stream_url) {
       setLoading(true);
       try {
         await api.addCamera(cameraData);
@@ -151,8 +151,8 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                 <label className="block text-sm text-gray-400 mb-1">RTSP Stream URL</label>
                 <input
                   type="text"
-                  value={cameraData.rtsp_url}
-                  onChange={(e) => setCameraData({ ...cameraData, rtsp_url: e.target.value })}
+                  value={cameraData.stream_url}
+                  onChange={(e) => setCameraData({ ...cameraData, stream_url: e.target.value })}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500"
                   placeholder="rtsp://192.168.1.100:554/stream1"
                 />
