@@ -1,9 +1,10 @@
 "use client";
 
-import { Incident } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { Incident, api } from "@/lib/api";
 
 interface IncidentTableProps {
-  incidents: Incident[];
+  incidents?: Incident[];
 }
 
 const severityColors: Record<string, string> = {
@@ -13,7 +14,36 @@ const severityColors: Record<string, string> = {
   low: "bg-blue-600",
 };
 
-export default function IncidentTable({ incidents }: IncidentTableProps) {
+export default function IncidentTable({ incidents: propIncidents }: IncidentTableProps) {
+  const [incidents, setIncidents] = useState<Incident[]>(propIncidents || []);
+  const [loading, setLoading] = useState(!propIncidents);
+
+  useEffect(() => {
+    if (!propIncidents) {
+      loadIncidents();
+    }
+  }, [propIncidents]);
+
+  async function loadIncidents() {
+    try {
+      const data = await api.getIncidents();
+      setIncidents(data);
+    } catch (error) {
+      console.error("Failed to load incidents:", error);
+      setIncidents([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center text-gray-500">
+        Loading incidents...
+      </div>
+    );
+  }
+
   if (incidents.length === 0) {
     return (
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center text-gray-500">
