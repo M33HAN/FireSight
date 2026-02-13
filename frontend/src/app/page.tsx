@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BarChart3, AlertTriangle, Camera, Activity, TrendingUp } from "lucide-react";
+import OnboardingWizard from "@/components/OnboardingWizard";
 
 interface DashboardStats {
   total_incidents: number;
@@ -19,8 +20,11 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
+    const hasCompleted = localStorage.getItem("firesight_onboarding_complete");
+    if (!hasCompleted) setShowOnboarding(true);
     loadDashboard();
   }, []);
 
@@ -33,7 +37,6 @@ export default function Dashboard() {
     } catch (err: any) {
       console.error("Failed to load dashboard:", err);
       setError(err.message);
-      // Set default empty stats so the UI still renders
       setStats({
         total_incidents: 0,
         incidents_today: 0,
@@ -48,6 +51,16 @@ export default function Dashboard() {
     }
   }
 
+  function handleOnboardingComplete() {
+    localStorage.setItem("firesight_onboarding_complete", "true");
+    setShowOnboarding(false);
+    loadDashboard();
+  }
+
+  if (showOnboarding) {
+    return <OnboardingWizard onComplete={handleOnboardingComplete} />;
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -60,43 +73,14 @@ export default function Dashboard() {
   }
 
   const statCards = [
-    {
-      label: "Total Incidents",
-      value: stats?.total_incidents ?? 0,
-      icon: AlertTriangle,
-      color: "text-orange-500",
-      bg: "bg-orange-500/10",
-      border: "border-orange-500/20",
-    },
-    {
-      label: "Today",
-      value: stats?.incidents_today ?? 0,
-      icon: TrendingUp,
-      color: "text-amber-400",
-      bg: "bg-amber-400/10",
-      border: "border-amber-400/20",
-    },
-    {
-      label: "Active Cameras",
-      value: stats?.active_cameras ?? 0,
-      icon: Camera,
-      color: "text-emerald-400",
-      bg: "bg-emerald-400/10",
-      border: "border-emerald-400/20",
-    },
-    {
-      label: "Active Sessions",
-      value: stats?.detection_sessions ?? 0,
-      icon: Activity,
-      color: "text-blue-400",
-      bg: "bg-blue-400/10",
-      border: "border-blue-400/20",
-    },
+    { label: "Total Incidents", value: stats?.total_incidents ?? 0, icon: AlertTriangle, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" },
+    { label: "Today", value: stats?.incidents_today ?? 0, icon: TrendingUp, color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20" },
+    { label: "Active Cameras", value: stats?.active_cameras ?? 0, icon: Camera, color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20" },
+    { label: "Active Sessions", value: stats?.detection_sessions ?? 0, icon: Activity, color: "text-blue-400", bg: "bg-blue-400/10", border: "border-blue-400/20" },
   ];
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-gray-500 mt-1 text-sm">Real-time AI video analytics overview</p>
@@ -108,7 +92,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card) => {
           const Icon = card.icon;
@@ -131,7 +114,6 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Category Breakdown */}
       {stats?.category_breakdown && Object.keys(stats.category_breakdown).length > 0 && (
         <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-white/5 p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -140,10 +122,7 @@ export default function Dashboard() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {Object.entries(stats.category_breakdown).map(([category, count]) => (
-              <div
-                key={category}
-                className="bg-white/5 rounded-lg p-4 text-center border border-white/5 hover:border-orange-500/30 transition-all"
-              >
+              <div key={category} className="bg-white/5 rounded-lg p-4 text-center border border-white/5 hover:border-orange-500/30 transition-all">
                 <div className="text-2xl font-bold text-orange-400">{count}</div>
                 <div className="text-xs text-gray-500 capitalize mt-1">{category}</div>
               </div>
@@ -152,7 +131,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Recent Incidents / Empty State */}
       <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-white/5 p-6">
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-orange-500" />
