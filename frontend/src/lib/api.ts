@@ -59,8 +59,19 @@ class FireSightAPI {
     this.baseUrl = baseUrl;
   }
 
+  private ensureTrailingSlash(endpoint: string): string {
+    // Add trailing slash if endpoint doesn't have one and doesn't have query params
+    const qIndex = endpoint.indexOf("?");
+    if (qIndex === -1) {
+      return endpoint.endsWith("/") ? endpoint : endpoint + "/";
+    }
+    const path = endpoint.substring(0, qIndex);
+    const query = endpoint.substring(qIndex);
+    return (path.endsWith("/") ? path : path + "/") + query;
+  }
+
   private async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = this.baseUrl + this.ensureTrailingSlash(endpoint);
     const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +82,7 @@ class FireSightAPI {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || `API Error: ${response.status}`);
+      throw new Error(error.detail || "API Error: " + response.status);
     }
 
     return response.json();
@@ -84,7 +95,7 @@ class FireSightAPI {
   }
 
   async getCamera(id: number): Promise<Camera> {
-    return this.request<Camera>(`/cameras/${id}`);
+    return this.request<Camera>("/cameras/" + id);
   }
 
   async addCamera(data: { name: string; rtsp_url: string; location?: string }): Promise<Camera> {
@@ -95,27 +106,27 @@ class FireSightAPI {
   }
 
   async updateCamera(id: number, data: Partial<Camera>): Promise<Camera> {
-    return this.request<Camera>(`/cameras/${id}`, {
+    return this.request<Camera>("/cameras/" + id, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   async deleteCamera(id: number): Promise<void> {
-    return this.request(`/cameras/${id}`, { method: "DELETE" });
+    return this.request("/cameras/" + id, { method: "DELETE" });
   }
 
   // ── Incidents ────────────────────────────────────────────────
 
   async getIncidents(params?: Record<string, string | number>): Promise<Incident[]> {
-    const query = params ? "?" + new URLSearchParams(
-      Object.entries(params).map(([k, v]) => [k, String(v)])
-    ).toString() : "";
-    return this.request<Incident[]>(`/incidents${query}`);
+    const query = params
+      ? "?" + new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)])).toString()
+      : "";
+    return this.request<Incident[]>("/incidents" + query);
   }
 
   async getIncident(id: number): Promise<Incident> {
-    return this.request<Incident>(`/incidents/${id}`);
+    return this.request<Incident>("/incidents/" + id);
   }
 
   // ── Detection ────────────────────────────────────────────────
@@ -142,7 +153,7 @@ class FireSightAPI {
   // ── Heatmap ──────────────────────────────────────────────────
 
   async getHeatmap(cameraId: number, timeRange: string): Promise<any> {
-    return this.request(`/heatmap/${cameraId}?range=${timeRange}`);
+    return this.request("/heatmap/" + cameraId + "?range=" + timeRange);
   }
 
   // ── Settings ─────────────────────────────────────────────────
@@ -167,7 +178,7 @@ class FireSightAPI {
   // ── Search ───────────────────────────────────────────────────
 
   async search(query: string): Promise<any> {
-    return this.request(`/search?q=${encodeURIComponent(query)}`);
+    return this.request("/search?q=" + encodeURIComponent(query));
   }
 
   // ── Share ────────────────────────────────────────────────────
@@ -202,17 +213,14 @@ class FireSightAPI {
   async upload(endpoint: string, file: File): Promise<any> {
     const formData = new FormData();
     formData.append("file", file);
-
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = this.baseUrl + this.ensureTrailingSlash(endpoint);
     const response = await fetch(url, {
       method: "POST",
       body: formData,
     });
-
     if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status}`);
+      throw new Error("Upload failed: " + response.status);
     }
-
     return response.json();
   }
 }
@@ -220,17 +228,14 @@ class FireSightAPI {
 // ─── WebSocket ─────────────────────────────────────────────────
 
 export function connectLiveFeed(cameraId: number, onMessage: (data: any) => void) {
-  const ws = new WebSocket(`${WS_BASE_URL}/live/${cameraId}`);
-
+  const ws = new WebSocket(WS_BASE_URL + "/live/" + cameraId);
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     onMessage(data);
   };
-
   ws.onerror = (error) => {
     console.error("WebSocket error:", error);
   };
-
   return ws;
 }
 
