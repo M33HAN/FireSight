@@ -5,17 +5,10 @@ import { api } from "@/lib/api";
 import { HeartPulse, Cpu, HardDrive, Wifi, WifiOff } from "lucide-react";
 
 interface SystemHealth {
-  cpu_percent: number;
-  memory_percent: number;
-  disk_percent: number;
-  gpu_utilization: number;
-  gpu_memory_percent: number;
-  uptime_seconds: number;
-  active_streams: number;
-  inference_fps: number;
-  db_connections: number;
-  redis_connected: boolean;
-  minio_connected: boolean;
+  cpu_percent: number; memory_percent: number; disk_percent: number;
+  gpu_utilization: number; gpu_memory_percent: number; uptime_seconds: number;
+  active_streams: number; inference_fps: number; db_connections: number;
+  redis_connected: boolean; minio_connected: boolean;
 }
 
 export default function HealthPage() {
@@ -23,43 +16,13 @@ export default function HealthPage() {
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  useEffect(() => {
-    loadHealth();
-    if (autoRefresh) {
-      const interval = setInterval(loadHealth, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [autoRefresh]);
+  useEffect(() => { loadHealth(); if (autoRefresh) { const i = setInterval(loadHealth, 5000); return () => clearInterval(i); } }, [autoRefresh]);
 
-  async function loadHealth() {
-    try {
-      const data = await api.getHealth();
-      setHealth(data);
-    } catch (err) {
-      console.error("Failed to load health:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  async function loadHealth() { try { const d = await api.getHealth(); setHealth(d); } catch (e) { console.error("Failed:", e); } finally { setLoading(false); } }
 
-  function formatUptime(seconds: number): string {
-    const d = Math.floor(seconds / 86400);
-    const h = Math.floor((seconds % 86400) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    return d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m`;
-  }
-
-  function getBarColor(value: number) {
-    if (value >= 90) return "bg-red-500";
-    if (value >= 70) return "bg-amber-500";
-    return "bg-emerald-500";
-  }
-
-  function getTextColor(value: number) {
-    if (value >= 90) return "text-red-400";
-    if (value >= 70) return "text-amber-400";
-    return "text-emerald-400";
-  }
+  function formatUptime(s: number): string { const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60); return d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m`; }
+  function getBarColor(v: number) { return v >= 90 ? "bg-red-500" : v >= 70 ? "bg-amber-500" : "bg-emerald-500"; }
+  function getTextColor(v: number) { return v >= 90 ? "text-red-400" : v >= 70 ? "text-amber-400" : "text-emerald-400"; }
 
   function ProgressBar({ value, label }: { value: number; label: string }) {
     return (
@@ -106,9 +69,7 @@ export default function HealthPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-white/5 p-6">
-              <h3 className="text-sm font-semibold text-gray-300 mb-5 flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-orange-500" /> System Resources
-              </h3>
+              <h3 className="text-sm font-semibold text-gray-300 mb-5 flex items-center gap-2"><Cpu className="w-4 h-4 text-orange-500" /> System Resources</h3>
               <div className="space-y-5">
                 <ProgressBar value={health.cpu_percent} label="CPU Usage" />
                 <ProgressBar value={health.memory_percent} label="Memory Usage" />
@@ -116,9 +77,7 @@ export default function HealthPage() {
               </div>
             </div>
             <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-white/5 p-6">
-              <h3 className="text-sm font-semibold text-gray-300 mb-5 flex items-center gap-2">
-                <HardDrive className="w-4 h-4 text-orange-500" /> GPU (Apple Neural Engine)
-              </h3>
+              <h3 className="text-sm font-semibold text-gray-300 mb-5 flex items-center gap-2"><HardDrive className="w-4 h-4 text-orange-500" /> GPU (Apple Neural Engine)</h3>
               <div className="space-y-5">
                 <ProgressBar value={health.gpu_utilization} label="GPU Utilization" />
                 <ProgressBar value={health.gpu_memory_percent} label="GPU Memory" />
@@ -130,9 +89,7 @@ export default function HealthPage() {
             </div>
           </div>
           <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-white/5 p-6">
-            <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-              <HeartPulse className="w-4 h-4 text-orange-500" /> Service Status
-            </h3>
+            <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2"><HeartPulse className="w-4 h-4 text-orange-500" /> Service Status</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { name: "Redis", ok: health.redis_connected, detail: health.redis_connected ? "Connected" : "Disconnected" },
@@ -142,10 +99,7 @@ export default function HealthPage() {
               ].map((svc) => (
                 <div key={svc.name} className="flex items-center gap-3 bg-white/[0.03] rounded-lg p-4 border border-white/5">
                   {svc.ok ? <Wifi className="w-4 h-4 text-emerald-500 flex-shrink-0" /> : <WifiOff className="w-4 h-4 text-red-500 flex-shrink-0" />}
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-300">{svc.name}</p>
-                    <p className="text-xs text-gray-600 truncate">{svc.detail}</p>
-                  </div>
+                  <div className="min-w-0"><p className="text-sm font-medium text-gray-300">{svc.name}</p><p className="text-xs text-gray-600 truncate">{svc.detail}</p></div>
                 </div>
               ))}
             </div>
