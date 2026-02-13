@@ -46,7 +46,7 @@ export default function HealthPage() {
     const d = Math.floor(seconds / 86400);
     const h = Math.floor((seconds % 86400) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
-    return d > 0 ? \`\${d}d \${h}h \${m}m\` : \`\${h}h \${m}m\`;
+    return d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m`;
   }
 
   function getBarColor(value: number) {
@@ -66,10 +66,10 @@ export default function HealthPage() {
       <div>
         <div className="flex justify-between text-sm mb-1.5">
           <span className="text-gray-400">{label}</span>
-          <span className={\`font-mono text-xs \${getTextColor(value)}\`}>{value.toFixed(1)}%</span>
+          <span className={`font-mono text-xs ${getTextColor(value)}`}>{value.toFixed(1)}%</span>
         </div>
         <div className="w-full bg-white/5 rounded-full h-1.5">
-          <div className={\`\${getBarColor(value)} rounded-full h-1.5 transition-all duration-700\`} style={{ width: \`\${Math.min(100, value)}%\` }} />
+          <div className={`${getBarColor(value)} rounded-full h-1.5 transition-all duration-700`} style={{ width: `${Math.min(100, value)}%` }} />
         </div>
       </div>
     );
@@ -84,7 +84,7 @@ export default function HealthPage() {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className={\`w-2 h-2 rounded-full \${health ? "bg-emerald-500 animate-pulse" : "bg-red-500"}\`} />
+            <span className={`w-2 h-2 rounded-full ${health ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
             <span className="text-xs text-gray-500">{health ? "Online" : "Connecting..."}</span>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
@@ -137,8 +137,8 @@ export default function HealthPage() {
               {[
                 { name: "Redis", ok: health.redis_connected, detail: health.redis_connected ? "Connected" : "Disconnected" },
                 { name: "MinIO", ok: health.minio_connected, detail: health.minio_connected ? "Connected" : "Disconnected" },
-                { name: "PostgreSQL", ok: true, detail: \`\${health.db_connections} connections\` },
-                { name: "Detection Engine", ok: true, detail: \`\${health.active_streams} streams\` },
+                { name: "PostgreSQL", ok: true, detail: `${health.db_connections} connections` },
+                { name: "Detection Engine", ok: true, detail: `${health.active_streams} streams` },
               ].map((svc) => (
                 <div key={svc.name} className="flex items-center gap-3 bg-white/[0.03] rounded-lg p-4 border border-white/5">
                   {svc.ok ? <Wifi className="w-4 h-4 text-emerald-500 flex-shrink-0" /> : <WifiOff className="w-4 h-4 text-red-500 flex-shrink-0" />}
